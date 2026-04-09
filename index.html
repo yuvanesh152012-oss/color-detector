@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Yuvanesh Ultra Color Detector</title>
+    <title>Yuvanesh Smart Color Detector</title>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
 
         body {
             font-family: Arial;
@@ -20,7 +16,7 @@
             color: white;
         }
 
-        /* 🌈 FULL BACKGROUND FIX */
+        /* 🌈 Background */
         body::before {
             content: "";
             position: fixed;
@@ -28,39 +24,38 @@
             height: 100%;
             background: linear-gradient(270deg, #ff512f, #dd2476, #1e90ff, #00c9ff);
             background-size: 800% 800%;
-            animation: gradientBG 10s ease infinite;
+            animation: bg 10s ease infinite;
             z-index: -2;
         }
 
-        @keyframes gradientBG {
+        @keyframes bg {
             0% {background-position:0% 50%;}
             50% {background-position:100% 50%;}
             100% {background-position:0% 50%;}
         }
 
-        /* ⚡ SMOOTH PIKACHU */
+        /* ⚡ Pikachu */
         .pikachu {
             position: fixed;
             bottom: 20px;
             width: 100px;
-            animation: moveSide 10s linear infinite;
+            animation: move 10s linear infinite;
             z-index: -1;
         }
 
-        @keyframes moveSide {
-            0% { left: -120px; }
-            50% { left: 50%; transform: translateX(-50%); }
-            100% { left: 110%; }
+        @keyframes move {
+            0% { left:-120px; }
+            50% { left:50%; transform:translateX(-50%); }
+            100% { left:110%; }
         }
 
-        /* 🧊 GLASS CARD */
+        /* Glass UI */
         .glass {
             background: rgba(255,255,255,0.12);
             backdrop-filter: blur(15px);
             padding: 30px;
             border-radius: 20px;
             text-align: center;
-            box-shadow: 0 0 25px rgba(0,0,0,0.3);
         }
 
         canvas {
@@ -81,16 +76,14 @@
             cursor: pointer;
         }
 
-        #app { display: none; }
+        #app { display:none; }
 
-        /* ✨ NAME STYLE */
         .name {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
             background: linear-gradient(to right, #ffcc00, #ff0066);
             -webkit-background-clip: text;
             color: transparent;
-            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -100,8 +93,7 @@
 <img src="https://i.imgur.com/2DhmtJ4.png" class="pikachu">
 
 <div class="glass">
-
-    <h1>🎨 Color Detector</h1>
+    <h1>🎨 Smart Color Detector</h1>
     <div class="name">By Yuvanesh 🚀</div>
 
     <!-- LOGIN -->
@@ -114,97 +106,98 @@
 
     <!-- APP -->
     <div id="app">
-        <h3>Welcome 👋</h3>
+        <h3>Camera Active 🎥</h3>
         <video id="video" width="400" height="300" autoplay style="display:none;"></video>
         <canvas id="canvas" width="400" height="300"></canvas>
     </div>
-
 </div>
 
 <script>
-const correctPassword = "ESU"; // 🔐 CHANGE HERE
+const correctPassword = "pikachu"; // 🔐 CHANGE HERE
 
-function checkPassword() {
+function checkPassword(){
     let input = document.getElementById("password").value;
-
-    if (input === correctPassword) {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("app").style.display = "block";
+    if(input === correctPassword){
+        document.getElementById("login").style.display="none";
+        document.getElementById("app").style.display="block";
         startCamera();
     } else {
-        document.getElementById("error").innerText = "Wrong Password!";
+        document.getElementById("error").innerText="Wrong Password!";
     }
 }
 
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const video=document.getElementById("video");
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
 
-function startCamera() {
-    navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-        video.srcObject = stream;
+function startCamera(){
+    navigator.mediaDevices.getUserMedia({video:true})
+    .then(stream=>{
+        video.srcObject=stream;
     });
-
     requestAnimationFrame(processFrame);
 }
 
+// 🎨 MULTI COLOR DETECTION
 function detectColor(r,g,b){
-    if(r>150 && g<80 && b<80) return {name:"Red", color:"red"};
-    if(b>150 && r<80 && g<80) return {name:"Blue", color:"blue"};
-    if(r>150 && g>150 && b<80) return {name:"Yellow", color:"yellow"};
+
+    if(r>180 && g<80 && b<80) return {name:"Red", color:"red"};
+    if(b>150 && r<100 && g<100) return {name:"Blue", color:"blue"};
+    if(r>180 && g>180 && b<100) return {name:"Yellow", color:"yellow"};
+    if(g>150 && r<100 && b<100) return {name:"Green", color:"lime"};
     if(r>200 && b>150 && g<120) return {name:"Pink", color:"pink"};
+    if(r>200 && g>100 && b<80) return {name:"Orange", color:"orange"};
+    if(r>130 && b>130 && g<100) return {name:"Purple", color:"purple"};
+    if(r>200 && g>200 && b>200) return {name:"White", color:"white"};
+    if(r<50 && g<50 && b<50) return {name:"Black", color:"gray"};
+
     return null;
 }
 
 function processFrame(){
     ctx.drawImage(video,0,0,400,300);
 
-    let frame = ctx.getImageData(0,0,400,300);
-    let data = frame.data;
+    let frame=ctx.getImageData(0,0,400,300);
+    let data=frame.data;
 
-    let objects = {};
+    let objects={};
 
     for(let i=0;i<data.length;i+=4){
         let r=data[i], g=data[i+1], b=data[i+2];
 
-        let result = detectColor(r,g,b);
+        let res=detectColor(r,g,b);
 
-        if(result){
-            let index = i/4;
-            let x = index % 400;
-            let y = Math.floor(index/400);
+        if(res){
+            let index=i/4;
+            let x=index%400;
+            let y=Math.floor(index/400);
 
-            if(!objects[result.name]){
-                objects[result.name] = {
-                    minX:400, minY:300, maxX:0, maxY:0,
-                    color: result.color
-                };
+            if(!objects[res.name]){
+                objects[res.name]={minX:400,minY:300,maxX:0,maxY:0,color:res.color};
             }
 
-            let obj = objects[result.name];
+            let obj=objects[res.name];
 
-            obj.minX = Math.min(obj.minX, x);
-            obj.minY = Math.min(obj.minY, y);
-            obj.maxX = Math.max(obj.maxX, x);
-            obj.maxY = Math.max(obj.maxY, y);
+            obj.minX=Math.min(obj.minX,x);
+            obj.minY=Math.min(obj.minY,y);
+            obj.maxX=Math.max(obj.maxX,x);
+            obj.maxY=Math.max(obj.maxY,y);
         }
     }
 
     for(let key in objects){
-        let obj = objects[key];
+        let o=objects[key];
+        let w=o.maxX-o.minX;
+        let h=o.maxY-o.minY;
 
-        let width = obj.maxX - obj.minX;
-        let height = obj.maxY - obj.minY;
+        if(w>25 && h>25){
+            ctx.strokeStyle=o.color;
+            ctx.lineWidth=3;
+            ctx.strokeRect(o.minX,o.minY,w,h);
 
-        if(width > 20 && height > 20){
-            ctx.strokeStyle = obj.color;
-            ctx.lineWidth = 3;
-            ctx.strokeRect(obj.minX, obj.minY, width, height);
-
-            ctx.fillStyle = obj.color;
-            ctx.font = "18px Arial";
-            ctx.fillText(key, obj.minX, obj.minY - 10);
+            ctx.fillStyle=o.color;
+            ctx.font="18px Arial";
+            ctx.fillText(key,o.minX,o.minY-10);
         }
     }
 
